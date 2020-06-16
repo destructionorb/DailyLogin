@@ -1,0 +1,7 @@
+name: DailyLogin
+version: ${project.version}
+main: net.paradiserealms.dailylogin.DailyLogin
+api-version: 1.13
+prefix: [DR]
+authors: [destructionorb]
+description: Gives players a daily logon reward
