@@ -1,10 +1,13 @@
 package net.paradiserealms.dailylogin.listeners;
 
 import net.paradiserealms.dailylogin.files.PlayerStorage;
+import net.paradiserealms.dailylogin.util.GiveBonus;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.Plugin;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +16,20 @@ import java.time.LocalDateTime;
  * @author destructionorb
  */
 public class PlayerJoin implements Listener {
-    //TODO: create and format output when a reward is distributed to a player
+    //TODO: a check for a full inventory, which could honestly be avoided entirely by a command or user prompt
+
+    private Plugin plugin;
+    private Server server;
+
+    /**
+     * Constructs the listener with the plugin and server, so they can be passed onto the GiveBonus class
+     * @param plugin the plugin
+     * @param server the server the plugin is installed on
+     */
+    public PlayerJoin(Plugin plugin, Server server) {
+        this.plugin = plugin;
+        this.server = server;
+    }
 
     /**
      * The event handler for the listener, checks whether it is a new day for the player (or their first time joining).
@@ -27,33 +43,34 @@ public class PlayerJoin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        int days; //the number of days the player has logged on
-        int rewardDays; //the number in the players reward calendar
+        int days = 1; //the number of days the player has logged on
+        int rewardDays = 1; //the number in the players reward calendar
         int currday;
 
         LocalDateTime date = LocalDateTime.now();
         currday = date.getDayOfYear();
 
             if(!player.hasPlayedBefore()) {
-                days = 1;
-                rewardDays = 1;
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Days", days);
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Reward Days", rewardDays);
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Last Login", currday);
+                GiveBonus giveBonus = new GiveBonus(player, rewardDays, plugin, server);
+                giveBonus.dailyBonus();
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".days", days);
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".reward days", rewardDays);
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".last login", currday);
                 PlayerStorage.save();
-            } else if(PlayerStorage.get().getInt("Player." + player.getUniqueId() + ".Last Login") != date.getDayOfYear()) {
-                days = PlayerStorage.get().getInt("Player." + player.getUniqueId() + ".Days");
+            } else if(PlayerStorage.get().getInt("player." + player.getUniqueId() + ".last login") != date.getDayOfYear()) {
+                days = PlayerStorage.get().getInt("player." + player.getUniqueId() + ".days");
                 days++;
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Days", days);
-                rewardDays = PlayerStorage.get().getInt("Player." + player.getUniqueId() + ".Reward Days");
-
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".days", days);
+                rewardDays = PlayerStorage.get().getInt("player." + player.getUniqueId() + ".reward days");
+                GiveBonus giveBonus = new GiveBonus(player, rewardDays, plugin, server);
+                giveBonus.dailyBonus();
                 rewardDays++;
                 if(rewardDays == 32) {
                     rewardDays = 1;
                 }
 
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Reward Days", rewardDays);
-                PlayerStorage.get().set("Player." + player.getUniqueId() + ".Last Login", currday);
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".reward Days", rewardDays);
+                PlayerStorage.get().set("player." + player.getUniqueId() + ".last login", currday);
                 PlayerStorage.save();
             }
         }

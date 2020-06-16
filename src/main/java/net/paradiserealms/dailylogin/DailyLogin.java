@@ -4,8 +4,6 @@ import net.paradiserealms.dailylogin.files.PlayerStorage;
 import net.paradiserealms.dailylogin.listeners.PlayerJoin;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
-//TODO: create the part of the plugin that will distribute login rewards
-//TODO: create the config, which will allow for the configuration of what is distributed as rewards
 
 /**
  * The main class of the DailyLogin plugin. Handles the logic for enabling and disabling the plugin, as well as loading
@@ -23,7 +21,7 @@ public final class DailyLogin extends JavaPlugin {
 
         loadConfig();
         //listener for player join
-        getServer().getPluginManager().registerEvents(new PlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoin(this, getServer()), this);
 
         PlayerStorage.setup();
         PlayerStorage.save();
